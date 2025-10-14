@@ -19,17 +19,23 @@ public class FiguraServlet extends HttpServlet {
         
         // Obtenemos parámetros
         String tipo = request.getParameter("tipo");
+
+        if (tipo == null || tipo.trim().isEmpty()) {
+            mostrarError(response, "Debe seleccionar un tipo de figura.");
+            return;
+        }
+        tipo = tipo.toLowerCase();
         
         try {
             // Creamos la figura usando el factory
             Figura figura = FiguraFactory.crearFigura(tipo);
             
             // Configuramos las dimensiones según el tipo
-            if (tipo.equalsIgnoreCase("triangulo")) {
+            if (tipo.equals("triangulo")) {
                 double base = Double.parseDouble(request.getParameter("base"));
                 double altura = Double.parseDouble(request.getParameter("altura"));
                 figura.establecerDimensiones(base, altura);
-            } else if (tipo.equalsIgnoreCase("cuadrilatero")) {
+            } else if (tipo.equals("cuadrilatero")) {
                 double largo = Double.parseDouble(request.getParameter("largo"));
                 double ancho = Double.parseDouble(request.getParameter("ancho"));
                 figura.establecerDimensiones(largo, ancho);
@@ -54,11 +60,11 @@ public class FiguraServlet extends HttpServlet {
                 out.println("<h1>Resultado del cálculo</h1>");
                 out.println("<p><strong>Tipo de figura:</strong> " + figura.getTipo() + "</p>");
                 
-                if (tipo.equalsIgnoreCase("triangulo")) {
+                if (tipo.equals("triangulo")) {
                     double[] dimensiones = figura.getDimensiones();
                     out.println("<p><strong>Base:</strong> " + dimensiones[0] + "</p>");
                     out.println("<p><strong>Altura:</strong> " + dimensiones[1] + "</p>");
-                } else if (tipo.equalsIgnoreCase("cuadrilatero")) {
+                } else if (tipo.equals("cuadrilatero")) {
                     double[] dimensiones = figura.getDimensiones();
                     out.println("<p><strong>Largo:</strong> " + dimensiones[0] + "</p>");
                     out.println("<p><strong>Ancho:</strong> " + dimensiones[1] + "</p>");
