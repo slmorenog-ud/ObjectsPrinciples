@@ -43,12 +43,26 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit thi
         h1 {
             color: #333;
         }
+        .result, .error {
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .result {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 5px solid #c62828;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Calculadora de Áreas</h1>
-        <form action="FiguraServlet" method="post">
+        <form id="areaForm">
             <div class="form-group">
                 <label for="tipo">Seleccione el tipo de figura:</label>
                 <select id="tipo" name="tipo" class="form-control" onchange="mostrarCampos()">
@@ -84,23 +98,66 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit thi
             
             <button type="submit">Calcular Área</button>
         </form>
+
+        <!-- Sección para mostrar resultados -->
+        <div id="resultado" class="hidden"></div>
     </div>
     
     <script>
         function mostrarCampos() {
             var tipo = document.getElementById("tipo").value;
             
-            // Ocultar todos los campos
             document.getElementById("camposTriangulo").classList.add("hidden");
             document.getElementById("camposCuadrilatero").classList.add("hidden");
             
-            // Mostrar los campos según el tipo seleccionado
             if (tipo === "triangulo") {
                 document.getElementById("camposTriangulo").classList.remove("hidden");
             } else if (tipo === "cuadrilatero") {
                 document.getElementById("camposCuadrilatero").classList.remove("hidden");
             }
         }
+
+        document.getElementById("areaForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData);
+            const resultadoDiv = document.getElementById("resultado");
+
+            fetch("FiguraServlet", {
+                method: "POST",
+                body: params
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultadoDiv.classList.remove("hidden");
+                if (data.success) {
+                    resultadoDiv.className = "result";
+                    let html = "<h2>Resultado del cálculo</h2>";
+                    html += "<p><strong>Tipo de figura:</strong> " + data.tipo + "</p>";
+
+                    if (data.tipo === "Triángulo") {
+                        html += "<p><strong>Base:</strong> " + data.dimensiones.base + "</p>";
+                        html += "<p><strong>Altura:</strong> " + data.dimensiones.altura + "</p>";
+                    } else if (data.tipo === "Cuadrado" || data.tipo === "Rectángulo") {
+                        html += "<p><strong>Largo:</strong> " + data.dimensiones.largo + "</p>";
+                        html += "<p><strong>Ancho:</strong> " + data.dimensiones.ancho + "</p>";
+                    }
+
+                    html += "<p><strong>Área calculada:</strong> " + data.area + "</p>";
+                    resultadoDiv.innerHTML = html;
+                } else {
+                    resultadoDiv.className = "error";
+                    resultadoDiv.innerHTML = "<h2>Error</h2><p>" + data.error + "</p>";
+                }
+            })
+            .catch(error => {
+                resultadoDiv.classList.remove("hidden");
+                resultadoDiv.className = "error";
+                resultadoDiv.innerHTML = "<h2>Error</h2><p>Ocurrió un error al conectar con el servidor.</p>";
+                console.error('Error:', error);
+            });
+        });
     </script>
 </body>
 </html>

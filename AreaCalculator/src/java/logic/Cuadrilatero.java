@@ -24,10 +24,7 @@ public class Cuadrilatero implements Figura {
     
     @Override
     public String getTipo() {
-        if (largo == ancho) {
-            return "Cuadrado";
-        }
-        return "Rectángulo";
+        return "Cuadrilatero";
     }
     
     @Override
