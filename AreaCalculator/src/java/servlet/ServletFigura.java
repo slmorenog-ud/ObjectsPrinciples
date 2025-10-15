@@ -23,97 +23,58 @@ public class ServletFigura extends HttpServlet {
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        
-        // Obtenemos parámetros
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         String tipo = request.getParameter("tipo");
 
-        if (tipo == null || tipo.trim().isEmpty()) {
-            mostrarError(response, "Debe seleccionar un tipo de figura.");
-            return;
-        }
-        tipo = tipo.toLowerCase();
-        
-        try {
-            // Creamos la figura usando el factory
-            Figura figura = FactoryFigura.crearFigura(tipo);
-            
-            // Configuramos las dimensiones según el tipo
-            if (tipo.equals("triangulo")) {
-                double base = Double.parseDouble(request.getParameter("base"));
-                double altura = Double.parseDouble(request.getParameter("altura"));
-                figura.establecerDimensiones(base, altura);
-            } else if (tipo.equals("cuadrilatero")) {
-                double largo = Double.parseDouble(request.getParameter("largo"));
-                double ancho = Double.parseDouble(request.getParameter("ancho"));
-                figura.establecerDimensiones(largo, ancho);
-            }
-            
-            // Calculamos el área
-            double area = figura.calcularArea();
-            
-            try (PrintWriter out = response.getWriter()) {
-                out.println("<!DOCTYPE html>");
-                out.println("<html>");
-                out.println("<head>");
-                out.println("<title>Calculadora de Áreas</title>");
-                out.println("<style>");
-                out.println("body { font-family: Arial, sans-serif; margin: 40px; }");
-                out.println(".result { background-color: #f0f0f0; padding: 20px; border-radius: 8px; }");
-                out.println("h1 { color: #333; }");
-                out.println("</style>");
-                out.println("</head>");
-                out.println("<body>");
-                out.println("<div class='result'>");
-                out.println("<h1>Resultado del cálculo</h1>");
-                out.println("<p><strong>Tipo de figura:</strong> " + figura.getTipo() + "</p>");
-                
-                if (tipo.equals("triangulo")) {
-                    double[] dimensiones = figura.getDimensiones();
-                    out.println("<p><strong>Base:</strong> " + dimensiones[0] + "</p>");
-                    out.println("<p><strong>Altura:</strong> " + dimensiones[1] + "</p>");
-                } else if (tipo.equals("cuadrilatero")) {
-                    double[] dimensiones = figura.getDimensiones();
-                    out.println("<p><strong>Largo:</strong> " + dimensiones[0] + "</p>");
-                    out.println("<p><strong>Ancho:</strong> " + dimensiones[1] + "</p>");
-                }
-                
-                out.println("<p><strong>Área calculada:</strong> " + area + "</p>");
-                out.println("</div>");
-                out.println("<p><a href='index.html'>Volver al formulario</a></p>");
-                out.println("</body>");
-                out.println("</html>");
-            }
-        } catch (NumberFormatException e) {
-            // Error de formato en los números
-            mostrarError(response, "Los valores ingresados deben ser números válidos.");
-        } catch (IllegalArgumentException e) {
-            // Error de tipo de figura no soportado
-            mostrarError(response, e.getMessage());
-        } catch (Exception e) {
-            // Otros errores
-            mostrarError(response, "Error al procesar la solicitud: " + e.getMessage());
-        }
-    }
-    
-    private void mostrarError(HttpServletResponse response, String mensaje) throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Error</title>");
-            out.println("<style>body { font-family: Arial, sans-serif; margin: 40px; }");
-            out.println(".error { background-color: #ffebee; color: #c62828; padding: 20px; border-radius: 8px; }</style>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<div class='error'>");
-            out.println("<h2>Error</h2>");
-            out.println("<p>" + mensaje + "</p>");
-            out.println("</div>");
-            out.println("<p><a href='index.html'>Volver al formulario</a></p>");
-            out.println("</body>");
-            out.println("</html>");
+            if (tipo == null || tipo.trim().isEmpty()) {
+                out.print("{\"success\": false, \"error\": \"Debe seleccionar un tipo de figura.\"}");
+                return;
+            }
+            tipo = tipo.toLowerCase();
+
+            try {
+                Figura figura = FactoryFigura.crearFigura(tipo);
+                double area;
+                String jsonResponse;
+                String figuraTipoStr;
+
+                if (tipo.equals("triangulo")) {
+                    double base = Double.parseDouble(request.getParameter("base"));
+                    double altura = Double.parseDouble(request.getParameter("altura"));
+                    figura.establecerDimensiones(base, altura);
+                    area = figura.calcularArea();
+                    figuraTipoStr = "Triángulo";
+                    jsonResponse = String.format("{\"success\": true, \"tipo\": \"%s\", \"area\": %.2f, \"dimensiones\": {\"base\": %.2f, \"altura\": %.2f}}",
+                            figuraTipoStr, area, base, altura);
+                } else if (tipo.equals("cuadrilatero")) {
+                    double largo = Double.parseDouble(request.getParameter("largo"));
+                    double ancho = Double.parseDouble(request.getParameter("ancho"));
+                    figura.establecerDimensiones(largo, ancho);
+                    area = figura.calcularArea();
+
+                    if (largo == ancho) {
+                        figuraTipoStr = "Cuadrado";
+                    } else {
+                        figuraTipoStr = "Rectángulo";
+                    }
+                    jsonResponse = String.format("{\"success\": true, \"tipo\": \"%s\", \"area\": %.2f, \"dimensiones\": {\"largo\": %.2f, \"ancho\": %.2f}}",
+                            figuraTipoStr, area, largo, ancho);
+                } else {
+                     throw new IllegalArgumentException("Tipo de figura no soportado: " + tipo);
+                }
+
+                out.print(jsonResponse);
+
+            } catch (NumberFormatException e) {
+                out.print("{\"success\": false, \"error\": \"Los valores ingresados deben ser números válidos.\"}");
+            } catch (IllegalArgumentException e) {
+                out.print("{\"success\": false, \"error\": \"" + e.getMessage().replace("\"", "\\\"") + "\"}");
+            } catch (Exception e) {
+                out.print("{\"success\": false, \"error\": \"Error al procesar la solicitud: " + e.getMessage().replace("\"", "\\\"") + "\"}");
+            }
         }
     }
 
