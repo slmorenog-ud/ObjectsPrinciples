@@ -124,7 +124,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit thi
             const params = new URLSearchParams(formData);
             const resultadoDiv = document.getElementById("resultado");
 
-            fetch("FiguraServlet", {
+            fetch("/AreaCalculator/FiguraServlet", {
                 method: "POST",
                 body: params
             })
