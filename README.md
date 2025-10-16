@@ -9,7 +9,7 @@ This repository contains a Mermaid diagram representing an Activity-on-Arrow (AO
 
 ## Diagram Overview
 
-The diagram represents a project with 32 activities (A-Z, α, β, γ, δ, λ, ρ) with the following characteristics:
+The diagram represents a project with 32 activities (A-Z plus α, β, γ, δ, λ, ρ) with the following characteristics:
 - **52 nodes** representing project milestones/events
 - **32 activities** with specified durations
 - **Multiple dummy activities** (dotted lines) to properly represent complex dependencies
@@ -19,7 +19,7 @@ The diagram represents a project with 32 activities (A-Z, α, β, γ, δ, λ, ρ
 
 The diagram uses Mermaid syntax and can be visualized using:
 1. GitHub's built-in Mermaid rendering (in markdown files)
-2. [Mermaid Live Editor](https://mermaid.live/)
+2. [Mermaid Live Editor](https://mermaid.live/) or [mermaid.js.org](https://mermaid.js.org/)
 3. Any Mermaid-compatible viewer or IDE extension
 
 ## Diagram Structure
@@ -29,9 +29,11 @@ The diagram follows AOA (Activity-on-Arrow) network conventions:
 - **Solid arrows (→)**: Represent actual activities with durations in parentheses
 - **Dotted arrows (⋯→)**: Represent dummy activities (no duration, used for dependency logic)
 
-### Example Paths:
-- **A → D → G → J → N → S**: One potential path through the network
-- **C → F → I → M → P → W → β**: Another path with different activities
+### Example Activity Sequences:
+- **A, D, G, J, N, S**: One potential sequence through the network
+- **C, F, I, M, P, W, β**: Another sequence with different activities
+
+Note: These represent logical sequences of activities, not direct connections in the diagram. Dummy activities connect the nodes between these activities as needed.
 
 ## Activity Dependencies
 
